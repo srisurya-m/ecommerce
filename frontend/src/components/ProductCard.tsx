@@ -9,8 +9,6 @@ type ProductsProps = {
   handler: () => void;
 };
 
-const server = "vbds"; //temporary till backend is implemented
-
 const ProductCard = ({
   productId,
   price,
