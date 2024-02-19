@@ -6,10 +6,9 @@ import { connectDB } from "./utils/features.js";
 import { errorMiddleware } from "./middlewares/error.js";
 
 connectDB();
+
 const port = 4000;
-
 const app = express();
-
 app.use(express.json()); //middleware
 
 app.get("/", (req, res) => {
@@ -19,6 +18,8 @@ app.get("/", (req, res) => {
 // using routes
 app.use("/api/v1/user", userRoute);
 
+
+// using middleware(always place at last)
 app.use(errorMiddleware);
 
 app.listen(port, () => {
