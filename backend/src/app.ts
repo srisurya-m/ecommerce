@@ -2,6 +2,7 @@ import express from "express";
 
 //importing routes
 import userRoute from "./routes/User.js";
+import productRoute from "./routes/Products.js";
 import { connectDB } from "./utils/features.js";
 import { errorMiddleware } from "./middlewares/error.js";
 
@@ -17,8 +18,11 @@ app.get("/", (req, res) => {
 
 // using routes
 app.use("/api/v1/user", userRoute);
+app.use("/api/v1/product", productRoute);
 
 
+//declaring the uploads folder as a static folder
+app.use("/uploads",express.static("uploads"));
 // using middleware(always place at last)
 app.use(errorMiddleware);
 
