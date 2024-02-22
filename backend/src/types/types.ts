@@ -31,12 +31,21 @@ export type SearchRequestQuery = {
 };
 
 export interface baseQuery {
-  name?:{
-    $regex: string, // searches for that pattern
-    $options: string, // case insensitive
+  name?: {
+    $regex: string; // searches for that pattern
+    $options: string; // case insensitive
   };
   price?: {
-    $lte: number, // less than equal
+    $lte: number; // less than equal
   };
   category?: string;
 }
+
+export type InvalidateCacheProps = {
+  product?: boolean;
+  order?: boolean;
+  admin?: boolean;
+  userId?: string;
+  orderId?: string;
+  productId?: string | string[];
+};

@@ -8,6 +8,8 @@ import {
 import { Product } from "../modals/Product.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
+import { myCache } from "../app.js";
+import { invalidatesCache } from "../utils/features.js";
 
 export const newProduct = TryCatch(
   async (req: Request<{}, {}, newProductRequestBody>, res, next) => {
@@ -35,6 +37,7 @@ export const newProduct = TryCatch(
       photo: photo.path,
     });
 
+    await invalidatesCache({ product: true });
     return res.status(201).json({
       success: true,
       message: `${name} created successfully under category ${category}`,
@@ -65,14 +68,21 @@ export const updateProduct = TryCatch(async (req, res, next) => {
 
   await product.save();
 
+  await invalidatesCache({ product: true });
   return res.status(200).json({
     success: true,
     message: `Product updated Successfully `,
   });
 });
 
+//revalidate the cache on new,update,delete operations on product and also on new order
 export const getLatestProducts = TryCatch(async (req, res, next) => {
-  const products = await Product.find({}).sort({ createdAt: -1 }).limit(5); //-1 means descending and limit to fetch latest 5 products
+  let products;
+  if (myCache.has("latest-products")) {
+    products = JSON.parse(myCache.get("latest-products") as string);
+  }
+  products = await Product.find({}).sort({ createdAt: -1 }).limit(5); //-1 means descending and limit to fetch latest 5 products
+  myCache.set("latest-products", JSON.stringify(products));
 
   return res.status(200).json({
     success: true,
@@ -81,7 +91,7 @@ export const getLatestProducts = TryCatch(async (req, res, next) => {
 });
 
 // searching controller
-export const getAllProducts = TryCatch(   
+export const getAllProducts = TryCatch(
   async (req: Request<{}, {}, {}, SearchRequestQuery>, res, next) => {
     const { search, sort, price, category } = req.query;
     const page = Number(req.query.page) || 1;
@@ -126,8 +136,14 @@ export const getAllProducts = TryCatch(
   }
 );
 
+//revalidate the cache on new,update,delete operations on product and also on new order
 export const getAdminProducts = TryCatch(async (req, res, next) => {
-  const products = await Product.find({});
+  let products;
+  if (myCache.has("all-products")) {
+    products = JSON.parse(myCache.get("all-products") as string);
+  }
+  products = await Product.find({});
+  myCache.set("all-products", JSON.stringify(products));
 
   return res.status(200).json({
     success: true,
@@ -137,8 +153,13 @@ export const getAdminProducts = TryCatch(async (req, res, next) => {
 
 export const getSingleProduct = TryCatch(async (req, res, next) => {
   const id = req.params.id;
-  const product = await Product.findById(id);
+  let product;
+  if (myCache.has(`product-${id}`)) {
+    product = JSON.parse(myCache.get(`product-${id}`) as string);
+  }
+  product = await Product.findById(id);
   if (!product) return next(new ErrorHandler("Product Not Found", 404));
+  myCache.set(`product-${id}`, JSON.stringify(product));
 
   return res.status(200).json({
     success: true,
@@ -156,6 +177,7 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
   });
 
   await product.deleteOne();
+  await invalidatesCache({ product: true });
 
   return res.status(200).json({
     success: true,
@@ -163,8 +185,14 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
   });
 });
 
+//revalidate the cache on new,update,delete operations on product and also on new order
 export const getAllCategories = TryCatch(async (req, res, next) => {
-  const categories = await Product.distinct("category");
+  let categories;
+  if (myCache.has("categories")) {
+    categories = JSON.parse(myCache.get("categories") as string);
+  }
+  categories = await Product.distinct("category");
+  myCache.set("categories", JSON.stringify(categories));
   return res.status(200).json({
     success: true,
     categories,
