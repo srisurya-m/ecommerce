@@ -68,7 +68,7 @@ export const updateProduct = TryCatch(async (req, res, next) => {
 
   await product.save();
 
-  await invalidatesCache({ product: true });
+  await invalidatesCache({ product: true,productId:String(product._id) });
   return res.status(200).json({
     success: true,
     message: `Product updated Successfully `,
@@ -177,7 +177,7 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
   });
 
   await product.deleteOne();
-  await invalidatesCache({ product: true });
+  await invalidatesCache({ product: true,productId:String(product._id) });
 
   return res.status(200).json({
     success: true,
