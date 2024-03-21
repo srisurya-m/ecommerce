@@ -14,7 +14,7 @@ export const adminOnly = TryCatch(async (req, res, next) => {
     return next(new ErrorHandler("Spam user detected", 401));
   }
   if (user.role !=="admin") {
-    return next(new ErrorHandler("You are currently unauthorized to proceed", 401));
+    return next(new ErrorHandler("You are currently unauthorized to proceed", 403));
   }
 
   next(); //proceeds with the next operation

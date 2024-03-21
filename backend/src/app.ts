@@ -7,6 +7,7 @@ import morgan from "morgan";
 import userRoute from "./routes/User.js";
 import productRoute from "./routes/Products.js";
 import orderRoute from "./routes/Orders.js";
+import paymentRoute from "./routes/Payment.js";
 import { connectDB } from "./utils/features.js";
 import { errorMiddleware } from "./middlewares/error.js";
 
@@ -30,6 +31,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/product", productRoute);
 app.use("/api/v1/order", orderRoute);
+app.use("/api/v1/payment", paymentRoute);
 
 //declaring the uploads folder as a static folder
 app.use("/uploads", express.static("uploads"));
