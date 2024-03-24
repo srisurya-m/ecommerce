@@ -3,6 +3,7 @@ import NodeCache from "node-cache";
 import { config } from "dotenv";
 import morgan from "morgan";
 import Stripe from "stripe";
+import cors from "cors";
 
 //importing routes
 import userRoute from "./routes/User.js";
@@ -26,6 +27,7 @@ const port = process.env.PORT || 4000;
 const app = express();
 app.use(express.json()); //middleware
 app.use(morgan("dev"));
+app.use(cors());  // can only be used for specific urls as well 
 
 app.get("/", (req, res) => {
   res.send("API working with /api/v1");
