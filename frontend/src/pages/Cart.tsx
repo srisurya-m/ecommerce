@@ -6,10 +6,13 @@ import CartItemCard from "../components/CartItem";
 import {
   addToCart,
   calculatePrice,
+  discountApplied,
   removeCartItem,
 } from "../redux/reducer/cartReducer";
 import { cartReducerInitialState } from "../types/reducerTypes";
 import { CartItem } from "../types/types";
+import axios from "axios";
+import { server } from "../redux/store";
 
 const Cart = () => {
   const { cartItems, discount, shippingCharges, subtotal, tax, total } =
@@ -35,13 +38,28 @@ const Cart = () => {
   };
 
   useEffect(() => {
-    const timeoutID = setTimeout(() => {
-      if (Math.random() > 0.5) setIsValidCouponCode(true);
-      else setIsValidCouponCode(false);
+    const { token, cancel } = axios.CancelToken.source(); // to cancel the request due to poor network 
+    const timeoutID = setTimeout(async () => {
+      try {
+        const res = await axios.get(
+          `${server}/api/v1/payment/discount?coupon=${couponCode}`,
+          { cancelToken: token }
+        );
+        if (res) {
+          dispatch(discountApplied(res.data.discount));
+          setIsValidCouponCode(true);
+          dispatch(calculatePrice());
+        }
+      } catch (error) {
+        dispatch(discountApplied(0));
+        setIsValidCouponCode(false);
+        dispatch(calculatePrice());
+      }
     }, 1000);
 
     return () => {
       clearTimeout(timeoutID);
+      cancel();
       setIsValidCouponCode(false);
     };
   }, [couponCode]);
