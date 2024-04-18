@@ -7,18 +7,15 @@ import {
 import { loadStripe } from "@stripe/stripe-js";
 import { FormEvent, useState } from "react";
 import toast from "react-hot-toast";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { NewOrderRequest } from "../types/apiTypes";
 import { useDispatch, useSelector } from "react-redux";
-import { userReducerInitialState } from "../types/reducerTypes";
-import { RootState } from "../redux/store";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useNewOrderMutation } from "../redux/api/orderApi";
 import { resetCart } from "../redux/reducer/cartReducer";
+import { RootState } from "../redux/store";
+import { NewOrderRequest } from "../types/apiTypes";
 import { responseToast } from "../utils/features";
 
-const stripePromise = loadStripe(
-  "pk_test_51OxVZZSE7DBQTjxET19dl5ZO7shbM7wXyJ7PuBtDmDYAUMfbDuFt68t8G3eVbnRjc8ZkVh1iA4kuLHxYZ9yBN93500EO53zR2v"
-);
+const stripePromise = loadStripe(import.meta.env.VITE_LOADSTRIPE_KEY);
 
 const CheckOutForm = () => {
   const stripe = useStripe();
@@ -68,14 +65,11 @@ const CheckOutForm = () => {
 
     if (error) {
       setIsProcessing(false);
-      // console.log(paymentIntent?.status);
-      // console.log(error.message);
       return toast.error(error.message || "Something went Wrong");
     }
     if (paymentIntent!.status === "succeeded") {
       const res = await newOrder(orderData);
       dispatch(resetCart);
-      // console.log("placing Order ");
       responseToast(res, navigate, "/orders");
     }
     setIsProcessing(false);

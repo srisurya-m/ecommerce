@@ -8,13 +8,6 @@ export const createPaymentIntent = TryCatch(async (req, res, next) => {
   if (!amount) {
     return next(new ErrorHandler("Please enter amount", 400));
   }
-
-  // const paymentIntent = await stripe.paymentIntents.create({
-  //   amount: Number(amount) * 100,
-  //   currency: "usd",
-  //   description:"Software development",
-  //   name: ""
-  // });
   const paymentIntent = await stripe.paymentIntents.create({
     description: "Software development services",
     shipping: {
