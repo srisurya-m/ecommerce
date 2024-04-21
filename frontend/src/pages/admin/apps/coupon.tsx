@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 const allLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const allNumbers = "1234567890";
-const allSymbols = "!@#$%^&*()_+";
+const allSymbols = "!@$%^*()+";
 
 const Coupon = () => {
   const [size, setSize] = useState<number>(8);
