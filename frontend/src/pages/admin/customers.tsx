@@ -1,19 +1,17 @@
 import { ReactElement, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { FaTrash } from "react-icons/fa";
+import { useSelector } from "react-redux";
 import { Column } from "react-table";
+import { SkeletonLoader } from "../../components/Loader";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import TableHOC from "../../components/admin/TableHOC";
-import { useSelector } from "react-redux";
-import { userReducerInitialState } from "../../types/reducerTypes";
 import {
   useAllUsersQuery,
   useDeleteUserMutation,
 } from "../../redux/api/userApi";
-import toast from "react-hot-toast";
 import { CustomError } from "../../types/apiTypes";
-import { SkeletonLoader } from "../../components/Loader";
-import { responseToast } from "../../utils/features";
-import { useNavigate } from "react-router-dom";
+import { userReducerInitialState } from "../../types/reducerTypes";
 
 interface DataType {
   avatar: ReactElement;

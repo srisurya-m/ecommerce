@@ -32,7 +32,7 @@ const defaultData: Order = {
   _id: "",
 };
 const TransactionManagement = () => {
-  const { user, loading } = useSelector(
+  const { user } = useSelector(
     (state: { userReducer: userReducerInitialState }) => state.userReducer
   );
   const navigate = useNavigate();
