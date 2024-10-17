@@ -10,7 +10,7 @@ type CartItemProps = {
   removeHandler: (id: string) => void;
 };
 
-const CartItem = ({
+const CartItemComponent = ({
   cartItem,
   incrementHandler,
   decrementHandler,
@@ -18,7 +18,7 @@ const CartItem = ({
 }: CartItemProps) => {
   return (
     <div className="cart-item">
-      <img src={`${server}/${cartItem.photo}`} alt={cartItem.name} />
+      <img src={cartItem.photo} alt={cartItem.name} />
       <article>
         <Link to={`/product/${cartItem.productId}`}>{cartItem.name}</Link>
         <span>₹{cartItem.price}</span>
@@ -36,4 +36,4 @@ const CartItem = ({
   );
 };
 
-export default CartItem;
+export default CartItemComponent;

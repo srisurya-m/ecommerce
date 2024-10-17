@@ -78,7 +78,21 @@
         font-size: 1.1rem;
         transition: all 0.3s;
         &:hover {
-          rotate: 20deg;
+          rotate: -40deg;
+        }
+      }
+      a{
+        @include flex;
+        @include square(3rem);
+        border-radius: 100%;
+        border: none;
+        background-color: $color3;
+        cursor: pointer;
+        color: $color1;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+        &:hover {
+          rotate: 40deg;
         }
       }
     }

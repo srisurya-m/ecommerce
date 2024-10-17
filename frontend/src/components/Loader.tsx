@@ -6,14 +6,26 @@ const Loader = () => {
   );
 };
 
-export const SkeletonLoader = () => {
-  return (
-    <div className="skeleton-loader">
-      <div className="skeleton-shape"></div>
-      <div className="skeleton-shape"></div>
-      <div className="skeleton-shape"></div>
-    </div>
-  );
+interface SkeletonProps {
+  width?: string;
+  length?: number;
+  height?: string;
+  containerHeight?: string;
+}
+
+export const SkeletonLoader = ({ width = "unset",
+  length = 3,
+  height = "30px",
+  containerHeight = "unset",} : SkeletonProps) => {
+    const skeletons = Array.from({ length }, (_, idx) => (
+      <div key={idx} className="skeleton-shape" style={{ height }}></div>
+    ));
+  
+    return (
+      <div className="skeleton-loader" style={{ width, height: containerHeight }}>
+        {skeletons}
+      </div>
+    );
 };
 
 export default Loader;

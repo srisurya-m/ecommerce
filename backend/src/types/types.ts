@@ -1,6 +1,11 @@
 import { NextFunction } from "express";
 import { Request, Response } from "express";
 
+export interface CloudinaryResponse {
+  public_id: string;
+  secure_url: string;
+}
+
 export interface newUserRequestBody {
   name: string;
   email: string;
@@ -14,6 +19,7 @@ export interface newProductRequestBody {
   category: string;
   price: number;
   stock: number;
+  description:string;
 }
 
 export type ControllerType = (

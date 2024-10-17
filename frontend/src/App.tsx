@@ -14,6 +14,7 @@ import ProtectedRoute from "./components/protectedRoute";
 //lazy loading i.e loading necessary components
 const Home = lazy(() => import("./pages/Home"));
 const Search = lazy(() => import("./pages/Search"));
+const ProductDetails = lazy(() => import("./pages/ProductDetails"));
 const Cart = lazy(() => import("./pages/Cart"));
 const Shipping = lazy(() => import("./pages/Shipping"));
 const Login = lazy(() => import("./pages/Login"));
@@ -67,6 +68,7 @@ const App = () => {
           {/* user login not required */}
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/cart" element={<Cart />} />
           {/* accessible if not logged in */}
           <Route

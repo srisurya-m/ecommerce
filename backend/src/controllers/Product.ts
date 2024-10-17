@@ -9,32 +9,38 @@ import { Product } from "../modals/Product.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
 import { myCache } from "../app.js";
-import { invalidatesCache } from "../utils/features.js";
+import { deleteFromCloudinary, invalidatesCache, uploadToCloudinary } from "../utils/features.js";
 
 export const newProduct = TryCatch(
   async (req: Request<{}, {}, newProductRequestBody>, res, next) => {
-    const { name, category, price, stock } = req.body;
-    const photo = req.file;
+    const { name, category, price, stock,description } = req.body;
+    const photos = req.files as Express.Multer.File[] | undefined;
 
-    if (!photo) {
+    if (!photos) {
       return next(new ErrorHandler("Please add a Photo", 400));
     }
+    if (photos.length < 1) {
+      return next(new ErrorHandler("Please add at least one Photo", 400));
+    }
+    if (photos.length > 5) {
+      return next(new ErrorHandler("You can only add 5 photos", 400));
+    }
 
-    if (!name || !price || !stock || !category) {
-      //checking all fields are present and if not removing path of photo
-      rm(photo.path, () => {
-        console.log("Deleted");
-      });
+    if (!name || !price || !stock || !category || !description) {
 
       return next(new ErrorHandler("Please enter All Fields", 400));
     }
 
+    // upload on the cloudinary
+    const photosURL =  await uploadToCloudinary(photos)
+
     await Product.create({
       name,
       category: category.toLowerCase(),
+      description,
       price,
       stock,
-      photo: photo.path,
+      photos: photosURL,
     });
 
     invalidatesCache({ product: true, admin: true });
@@ -47,35 +53,48 @@ export const newProduct = TryCatch(
 
 export const updateProduct = TryCatch(async (req, res, next) => {
   const { id } = req.params;
-  const { name, price, stock, category } = req.body;
-  const photo = req.file;
+  const { name, price, stock, category, description } = req.body;
+  const photos = req.files as Express.Multer.File[] | undefined;
+
   const product = await Product.findById(id);
 
   if (!product) return next(new ErrorHandler("Product Not Found", 404));
 
-  if (photo) {
-    //checking all fields are present and if not removing path of photo
-    rm(product.photo!, () => {
-      console.log("Old photo Deleted");
+  if (photos && photos.length > 0) {
+    const photosURL = await uploadToCloudinary(photos);
+
+    const ids = product.photos.map((photo) => photo.public_id);
+
+    await deleteFromCloudinary(ids);
+
+    product.photos.splice(0, product.photos.length);  // Clear the existing photos array
+
+    // Add the new photos to the Mongoose DocumentArray
+    photosURL.forEach((photoData) => {
+      product.photos.push({
+        public_id: photoData.public_id,
+        url: photoData.url,
+      });
     });
-    product.photo = photo.path;
   }
 
   if (name) product.name = name;
   if (price) product.price = price;
   if (stock) product.stock = stock;
   if (category) product.category = category;
+  if (description) product.description = description;
 
   await product.save();
 
-  invalidatesCache({
+  await invalidatesCache({
     product: true,
     productId: String(product._id),
     admin: true,
   });
+
   return res.status(200).json({
     success: true,
-    message: `Product updated Successfully `,
+    message: "Product Updated Successfully",
   });
 });
 
@@ -176,10 +195,8 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
   const product = await Product.findById(id);
   if (!product) return next(new ErrorHandler("Product Not Found", 404));
 
-  rm(product.photo!, () => {
-    console.log("photo Deleted");
-  });
-
+  const ids = product.photos.map((photo)=> photo.public_id);
+  await deleteFromCloudinary(ids);
   await product.deleteOne();
   invalidatesCache({
     product: true,
