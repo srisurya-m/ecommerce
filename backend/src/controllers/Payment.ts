@@ -4,7 +4,7 @@ import { Coupon } from "../modals/Coupon.js";
 import ErrorHandler from "../utils/utility-class.js";
 
 export const createPaymentIntent = TryCatch(async (req, res, next) => {
-  const { amount,shippingInfo ,name} = req.body;
+  const { amount, shippingInfo, name } = req.body;
   if (!amount) {
     return next(new ErrorHandler("Please enter amount", 400));
   }
@@ -32,16 +32,16 @@ export const createPaymentIntent = TryCatch(async (req, res, next) => {
 });
 
 export const newCoupon = TryCatch(async (req, res, next) => {
-  const { coupon, amount } = req.body;
-  if (!coupon || !amount) {
+  const { code, amount } = req.body;
+  if (!code || !amount) {
     return next(
       new ErrorHandler("Please enter both coupon code and amount", 400)
     );
   }
-  await Coupon.create({ code: coupon, amount });
+  await Coupon.create({ code: code, amount });
   return res.status(201).json({
     success: true,
-    message: `coupon ${coupon} created successfully!`,
+    message: `coupon ${code} created successfully!`,
   });
 });
 
@@ -71,5 +71,29 @@ export const deleteCoupon = TryCatch(async (req, res, next) => {
   return res.status(200).json({
     success: true,
     message: "Coupon deleted successfully!",
+  });
+});
+
+export const updateCoupon = TryCatch(async (req, res, next) => {
+  const { id } = req.params;
+  const { code, amount } = req.body;
+  const coupon = await Coupon.findById(id);
+  if (!coupon) return next(new ErrorHandler("Invalid coupon code", 400));
+  if (code) coupon.code = code;
+  if (coupon) coupon.amount = amount;
+  await coupon.save();
+  return res.status(200).json({
+    success: true,
+    message: "Coupon updated successfully!",
+  });
+});
+
+export const getCoupon = TryCatch(async (req, res, next) => {
+  const { id } = req.params;
+  const coupon = await Coupon.findById(id);
+  if (!coupon) return next(new ErrorHandler("Invalid coupon code", 400));
+  return res.status(200).json({
+    success: true,
+    coupon,
   });
 });

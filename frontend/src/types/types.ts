@@ -12,8 +12,8 @@ export type Product = {
   name: string;
   price: number;
   stock: number;
-  description:string;
-  ratings:number;
+  description: string;
+  ratings: number;
   category: string;
   photos: {
     url: string;
@@ -136,4 +136,10 @@ export type Line = {
   products: number[];
   discount: number[];
   revenue: number[];
+};
+
+export type Coupon = {
+  code: string;
+  amount: number;
+  _id: string;
 };

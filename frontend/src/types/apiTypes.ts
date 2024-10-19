@@ -1,4 +1,4 @@
-import { Bar, CartItem, Line, Order, Pie, Product, ShippingInfo, Statistics, User } from "./types";
+import { Bar, CartItem, Coupon, Line, Order, Pie, Product, ShippingInfo, Statistics, User } from "./types";
 
 export type MessageResponse = {
   success: boolean;
@@ -117,4 +117,15 @@ export type BarResponse = {
 export type LineResponse = {
   success: boolean;
   charts: Line;
+};
+
+
+export type AllDiscountResponse = {
+  success: boolean;
+  coupons: Coupon[];
+};
+
+export type SingleDiscountResponse = {
+  success: boolean;
+  coupon: Coupon;
 };

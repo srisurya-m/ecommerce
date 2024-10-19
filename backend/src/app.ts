@@ -35,7 +35,13 @@ const port = process.env.PORT || 4000;
 const app = express();
 app.use(express.json()); //middleware
 app.use(morgan("dev"));
-app.use(cors());  // can only be used for specific urls as well 
+app.use(
+  cors({
+    origin: [process.env.CLIENT_URL!],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+); // can only be used for specific urls as well
 
 app.get("/", (req, res) => {
   res.send("API working with /api/v1");
