@@ -1,9 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
 import AdminSidebar from "../../../components/admin/AdminSidebar";
-import axios from "axios";
-import { useSelector } from "react-redux";
-import { userReducerInitialState } from "../../../types/reducerTypes";
-import toast from "react-hot-toast";
 
 const allLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const allNumbers = "1234567890";
@@ -16,11 +12,8 @@ const Coupon = () => {
   const [includeCharacters, setIncludeCharacters] = useState<boolean>(false);
   const [includeSymbols, setIncludeSymbols] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [amount,setAmount] = useState<number>(0)
+  const [amount, setAmount] = useState<number>(0);
   const [coupon, setCoupon] = useState<string>("");
-  const { user } = useSelector(
-    (state: { userReducer: userReducerInitialState }) => state.userReducer
-  );
 
   const copyText = async (coupon: string) => {
     await window.navigator.clipboard.writeText(coupon);
@@ -48,13 +41,6 @@ const Coupon = () => {
     setCoupon(result);
   };
 
-  const registerCouponHandler = async() =>{
-    const res = await axios.post(`${import.meta.env.VITE_SERVER}/api/v1/payment/coupon/new?id=${user?._id}`,{
-      amount,
-      coupon
-    })
-    if(res.data.success) toast.success(`${res.data.message}`)
-  }
   useEffect(() => {
     setIsCopied(false);
   }, [coupon]);
@@ -108,7 +94,11 @@ const Coupon = () => {
               <span>Symbols</span>
             </fieldset>
             <h5>Discount Amount</h5>
-            <input type="number" onChange={(e)=> setAmount(Number(e.target.value))} value={amount}/>
+            <input
+              type="number"
+              onChange={(e) => setAmount(Number(e.target.value))}
+              value={amount}
+            />
             <button type="submit">Generate</button>
           </form>
 
@@ -120,7 +110,6 @@ const Coupon = () => {
               </span>{" "}
             </code>
           )}
-          <button className="register-coupon" onClick={registerCouponHandler}>Register Coupon</button>
         </section>
       </main>
     </div>

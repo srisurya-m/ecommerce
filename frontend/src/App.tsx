@@ -43,6 +43,7 @@ const TransactionManagement = lazy(
 const DiscountManagement = lazy(
   () => import("./pages/admin/management/discountmanagement")
 );
+const NewDiscount = lazy(() => import("./pages/admin/management/newdiscount"));
 
 const App = () => {
   const dispatch = useDispatch();
@@ -125,7 +126,7 @@ const App = () => {
             />
             <Route
               path="/admin/discount/new"
-              element={<DiscountManagement />}
+              element={<NewDiscount />}
             />
             <Route
               path="/admin/discount/:id"

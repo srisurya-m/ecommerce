@@ -1,31 +1,20 @@
-import { Navigate, useParams } from "react-router-dom";
-import { useProductDetailsQuery } from "../redux/api/productApi";
-import { SkeletonLoader } from "../components/Loader";
-import {
-  CarouselButtonType,
-  MyntraCarousel,
-  Slider,
-  StylishCarousel,
-} from "6pp";
+import { CarouselButtonType, MyntraCarousel, Slider } from "6pp";
 import { useState } from "react";
-import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
-import RatingsComponent from "../components/Ratings";
-import { CartItem } from "../types/types";
 import toast from "react-hot-toast";
-import { addToCart } from "../redux/reducer/cartReducer";
+import { FaArrowLeftLong, FaArrowRightLong } from "react-icons/fa6";
 import { useDispatch } from "react-redux";
-
-type CartButtonsProps = {
-  addToCartHandler: (cartItem: CartItem) => string | undefined;
-};
+import { Navigate, useParams } from "react-router-dom";
+import { SkeletonLoader } from "../components/Loader";
+import RatingsComponent from "../components/Ratings";
+import { useProductDetailsQuery } from "../redux/api/productApi";
+import { addToCart } from "../redux/reducer/cartReducer";
+import { CartItem } from "../types/types";
 
 const ProductDetails = () => {
   const params = useParams();
   const dispatch = useDispatch();
 
-  const { isLoading, isError, data } = useProductDetailsQuery(
-    params.id!
-  );
+  const { isLoading, isError, data } = useProductDetailsQuery(params.id!);
 
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -43,7 +32,7 @@ const ProductDetails = () => {
     toast.success("Product added to cart successfully");
   };
 
-  if(isError) return <Navigate to="/404" />
+  if (isError) return <Navigate to="/404" />;
 
   return (
     <div className="product-details">
@@ -131,9 +120,9 @@ const ProductLoader = () => {
           padding: "2rem",
         }}
       >
-        <SkeletonLoader width="100%" length={3} />
-        <SkeletonLoader width="100%" length={4} />
-        <SkeletonLoader width="100%" length={4} />
+        <SkeletonLoader width="30%" length={3} />
+        <SkeletonLoader width="60%" length={4} />
+        <SkeletonLoader width="100%" length={6} />
       </section>
     </div>
   );
