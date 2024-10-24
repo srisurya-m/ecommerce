@@ -15,7 +15,7 @@ type ResType =
 
 export const responseToast = (
   res: ResType,
-  navigate: NavigateFunction,
+  navigate: NavigateFunction | null,
   url: string
 ) => {
   if ("data" in res) {

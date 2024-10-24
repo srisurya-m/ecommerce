@@ -1,19 +1,25 @@
 import { Request } from "express";
+import { myCache } from "../app.js";
 import { TryCatch } from "../middlewares/error.js";
+import { Product } from "../modals/Product.js";
+import { Review } from "../modals/Review.js";
+import { User } from "../modals/User.js";
 import {
   SearchRequestQuery,
   baseQuery,
   newProductRequestBody,
 } from "../types/types.js";
-import { Product } from "../modals/Product.js";
+import {
+  deleteFromCloudinary,
+  findAverageRatings,
+  invalidatesCache,
+  uploadToCloudinary,
+} from "../utils/features.js";
 import ErrorHandler from "../utils/utility-class.js";
-import { rm } from "fs";
-import { myCache } from "../app.js";
-import { deleteFromCloudinary, invalidatesCache, uploadToCloudinary } from "../utils/features.js";
 
 export const newProduct = TryCatch(
   async (req: Request<{}, {}, newProductRequestBody>, res, next) => {
-    const { name, category, price, stock,description } = req.body;
+    const { name, category, price, stock, description } = req.body;
     const photos = req.files as Express.Multer.File[] | undefined;
 
     if (!photos) {
@@ -27,12 +33,11 @@ export const newProduct = TryCatch(
     }
 
     if (!name || !price || !stock || !category || !description) {
-
       return next(new ErrorHandler("Please enter All Fields", 400));
     }
 
     // upload on the cloudinary
-    const photosURL =  await uploadToCloudinary(photos)
+    const photosURL = await uploadToCloudinary(photos);
 
     await Product.create({
       name,
@@ -67,7 +72,7 @@ export const updateProduct = TryCatch(async (req, res, next) => {
 
     await deleteFromCloudinary(ids);
 
-    product.photos.splice(0, product.photos.length);  // Clear the existing photos array
+    product.photos.splice(0, product.photos.length); // Clear the existing photos array
 
     // Add the new photos to the Mongoose DocumentArray
     photosURL.forEach((photoData) => {
@@ -195,7 +200,7 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
   const product = await Product.findById(id);
   if (!product) return next(new ErrorHandler("Product Not Found", 404));
 
-  const ids = product.photos.map((photo)=> photo.public_id);
+  const ids = product.photos.map((photo) => photo.public_id);
   await deleteFromCloudinary(ids);
   await product.deleteOne();
   invalidatesCache({
@@ -221,5 +226,102 @@ export const getAllCategories = TryCatch(async (req, res, next) => {
   return res.status(200).json({
     success: true,
     categories,
+  });
+});
+
+export const newReview = TryCatch(async (req, res, next) => {
+  const user = await User.findById(req.query.id);
+  if (!user) return next(new ErrorHandler("User Not Found", 404));
+  const id = req.params.id;
+  const product = await Product.findById(id);
+  if (!product) return next(new ErrorHandler("Product Not Found", 404));
+
+  const { comment, rating } = req.body;
+
+  const alreadyReviewed = await Review.findOne({
+    user: user._id,
+    product: product._id,
+  });
+
+  if (alreadyReviewed) {
+    alreadyReviewed.comment = comment;
+    alreadyReviewed.rating = rating;
+
+    await alreadyReviewed.save();
+  } else {
+    await Review.create({
+      comment,
+      rating,
+      user: user?._id,
+      product: product?._id,
+    });
+  }
+
+  const { ratings, numOfReviews } = await findAverageRatings(product._id);
+
+  product.ratings = ratings;
+  product.numOfReviews = numOfReviews;
+
+  await product.save();
+
+  invalidatesCache({
+    product: true,
+    productId: String(product._id),
+    admin: true,
+  });
+
+  return res.status(alreadyReviewed ? 200 : 201).json({
+    success: true,
+    message: alreadyReviewed ? "Review updated" : `Review added Successfully `,
+  });
+});
+
+export const deleteReview = TryCatch(async (req, res, next) => {
+  const user = await User.findById(req.query.id);
+  if (!user) return next(new ErrorHandler("User Not Found", 404));
+  const id = req.params.id;
+  const review = await Review.findById(id);
+  if (!review) return next(new ErrorHandler("Review Not Found", 404));
+
+  const isAuthenticUser = review.user.toString() === user._id.toString();
+
+  if (!isAuthenticUser) {
+    return next(new ErrorHandler("Not Authorized", 401));
+  }
+
+  await review.deleteOne();
+
+  const product = await Product.findById(review.product);
+  if (!product) return next(new ErrorHandler("Product Not Found", 404));
+  const { ratings, numOfReviews } = await findAverageRatings(product._id);
+
+  product.ratings = ratings;
+  product.numOfReviews = numOfReviews;
+
+  await product.save();
+
+  invalidatesCache({
+    product: true,
+    productId: String(product._id),
+    admin: true,
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Review deleted",
+  });
+});
+
+export const allReviewsOfProduct = TryCatch(async (req, res, next) => {
+  const id = req.params.id;
+  const reviews = await Review.find({
+    product: id,
+  })
+    .populate("user", "name photo")
+    .sort({ updatedAt: -1 });
+
+  return res.status(200).json({
+    success: true,
+    reviews,
   });
 });

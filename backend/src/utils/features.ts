@@ -7,6 +7,7 @@ import {
 import { myCache } from "../app.js";
 import { Product } from "../modals/Product.js";
 import { v2 as cloudinary } from "cloudinary";
+import { Review } from "../modals/Review.js";
 
 export const connectDB = (uri: string) => {
   mongoose
@@ -140,4 +141,22 @@ export const getChartData = ({
     }
   });
   return data;
+};
+
+export const findAverageRatings = async (
+  productId: mongoose.Types.ObjectId
+) => {
+  let totalRating = 0;
+
+  const reviews = await Review.find({ product: productId });
+  reviews.forEach((review) => {
+    totalRating += review.rating;
+  });
+
+  const averageRating = Math.floor(totalRating / reviews.length) || 0;
+
+  return {
+    numOfReviews: reviews.length,
+    ratings: averageRating,
+  };
 };

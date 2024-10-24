@@ -12,6 +12,7 @@ import {
 } from "../../redux/api/userApi";
 import { CustomError } from "../../types/apiTypes";
 import { userReducerInitialState } from "../../types/reducerTypes";
+import { transformImage } from "../../utils/features";
 
 interface DataType {
   avatar: ReactElement;
@@ -75,7 +76,7 @@ const Customers = () => {
     if (data)
       setRows(
         data.users.map((i) => ({
-          avatar: <img src={i.photo} alt={i.name}/>,
+          avatar: <img src={transformImage(i.photo)} alt={i.name} />,
           name: i.name,
           email: i.email,
           gender: i.gender,
