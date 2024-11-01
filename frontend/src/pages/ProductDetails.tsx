@@ -181,9 +181,13 @@ const ProductDetails = () => {
       <section>
         <article>
           <h2>Reviews</h2>
-          <button onClick={showDialog}>
-            <FiEdit />
-          </button>
+          {reviewsResponse.isLoading
+            ? null
+            : user && (
+                <button onClick={showDialog}>
+                  <FiEdit />
+                </button>
+              )}
         </article>
         {reviewsResponse.isLoading ? (
           <>

@@ -1,19 +1,28 @@
+import { v2 as cloudinary } from "cloudinary";
+import { Redis } from "ioredis";
 import mongoose, { Document } from "mongoose";
+import { redis } from "../app.js";
+import { Product } from "../modals/Product.js";
+import { Review } from "../modals/Review.js";
 import {
   CloudinaryResponse,
   InvalidateCacheProps,
   OrderItemType,
 } from "../types/types.js";
-import { myCache } from "../app.js";
-import { Product } from "../modals/Product.js";
-import { v2 as cloudinary } from "cloudinary";
-import { Review } from "../modals/Review.js";
 
 export const connectDB = (uri: string) => {
   mongoose
     .connect(uri)
     .then((c) => console.log(`DB connected to ${c.connection.host}`))
     .catch((e) => console.log(e));
+};
+
+export const connectRedis = (redisUri: string) => {
+  const redis = new Redis(redisUri);
+  redis.on("connect", () => console.log("Redis Connected"));
+  redis.on("error", (e) => console.log(e));
+
+  return redis;
 };
 
 export const getBase64 = (file: Express.Multer.File) => {
@@ -49,14 +58,20 @@ export const deleteFromCloudinary = async (publicIds: string[]) => {
   await Promise.all(promises);
 };
 
-export const invalidatesCache = ({
+export const invalidatesCache = async ({
   product,
   order,
   admin,
+  review,
   userId,
   orderId,
   productId,
 }: InvalidateCacheProps) => {
+
+  if(review){
+    await redis.del(`reviews-${productId}`)
+  }
+
   if (product) {
     let productKeys: string[] = [
       "latest-products",
@@ -70,7 +85,7 @@ export const invalidatesCache = ({
       // mostly in js everything is object so array over here is substituted as object
       productId.forEach((i) => productKeys.push(`product-${i}`));
 
-    myCache.del(productKeys);
+    await redis.del(productKeys);
   }
   if (order) {
     const orderKeys: string[] = [
@@ -78,9 +93,10 @@ export const invalidatesCache = ({
       `my-orders-${userId}`,
       `order-${orderId}`,
     ];
+    await redis.del(orderKeys);
   }
   if (admin) {
-    myCache.del([
+    await redis.del([
       "admin-stats",
       "admin-pie-charts",
       "admin-bar-charts",
